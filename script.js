@@ -30,15 +30,19 @@ function calculateTotalEventTime() {
         const start = new Date(`1970-01-01T${startTime}Z`);
         const end = new Date(`1970-01-01T${endTime}Z`);
 
-        let diff = (end - start) / (1000 * 60 * 60); // Difference in hours
+        let diff = (end - start) / (1000 * 60); // Difference in minutes
 
         if (diff < 0) {
-            diff += 24; // Handle overnight events
+            diff += 24 * 60; // Handle overnight events
         }
 
-        document.getElementById('totalEventTime').value = diff.toFixed(2);
+        const hours = Math.floor(diff / 60);
+        const minutes = diff % 60;
+
+        document.getElementById('totalEventTime').value = `${hours} hour(s) and ${minutes} minute(s)`;
     }
 }
+
 
 function calculateTotal() {
     calculateTotalEventTime(); // Ensure the total event time is calculated
