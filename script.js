@@ -276,7 +276,14 @@ async function parsePDF() {
         document.getElementById('startTime').value = formatTime(extractText(text, 'Start Time:', 'End Time:'));
         document.getElementById('endTime').value = formatTime(extractText(text, 'End Time:', 'Total Event Time (hours):'));
         document.getElementById('totalEventTime').value = extractText(text, 'Total Event Time (hours):', 'Event Type:').trim();
-        document.getElementById('eventType').value = extractText(text, 'Event Type:', 'Amount of Guests:').trim();
+
+        // Extract event type and comment
+        const eventTypeWithComment = extractText(text, 'Event Type:', 'Amount of Guests:').trim();
+        const eventType = findMatchingEventType(eventTypeWithComment);
+        const eventTypeComment = extractEventComment(eventTypeWithComment, eventType);
+        document.getElementById('eventType').value = eventType;
+        document.getElementById('eventTypeComment').value = eventTypeComment;
+
         document.getElementById('guests').value = extractText(text, 'Amount of Guests:', 'Room #:').trim();
         document.getElementById('room').value = extractText(text, 'Room #:', "Client's Info:").trim();
         document.getElementById('clientInfo').value = extractText(text, "Client's Info:", 'DJ Required:').trim();
@@ -298,10 +305,10 @@ async function parsePDF() {
         document.getElementById('bar').value = extractText(text, 'Chosen Bar:', 'Other Comments:').trim();
         document.getElementById('comments').value = extractText(text, 'Other Comments:', 'Payment Details').trim();
         document.getElementById('pricePerPerson').value = extractText(text, 'Price per Person ($):', 'Total Before Tax ($):').replace('$', '').trim();
-        
+
         const totalBeforeTax = extractText(text, 'Total Before Tax ($):', 'Discount (%):').replace('$', '').trim();
         document.getElementById('totalBeforeTax').value = totalBeforeTax;
-        
+
         document.getElementById('discount').value = extractText(text, 'Discount (%):', 'Total Discount Amount ($):').replace('%', '').trim();
         document.getElementById('discountAmount').value = extractText(text, 'Total Discount Amount ($):', 'Tax (7.5%):').replace('$', '').trim();
         document.getElementById('tax').value = extractText(text, 'Tax (7.5%):', 'Gratuity (18%):').replace('$', '').trim();
@@ -322,12 +329,27 @@ function extractText(text, start, end) {
     return text.substring(startIndex, endIndex).trim();
 }
 
+// Helper function to match event type from the form's dropdown
+function findMatchingEventType(extractedEventType) {
+    const eventTypeSelect = document.getElementById('eventType');
+    const options = Array.from(eventTypeSelect.options);
+    
+    // Match the extracted event type with the options in the select element
+    const match = options.find(option => extractedEventType.includes(option.value));
+    return match ? match.value : ''; // Return matched value or an empty string if no match found
+}
+
+// Helper function to extract the event comment
+function extractEventComment(eventTypeWithComment, eventType) {
+    const commentStartIndex = eventTypeWithComment.indexOf(eventType) + eventType.length;
+    const comment = eventTypeWithComment.substring(commentStartIndex).trim();
+    return comment.startsWith('(') && comment.endsWith(')') ? comment.slice(1, -1) : comment;
+}
+
 function formatDate(dateStr) {
-    // Convert a date string like '2024-08-29' to the format required by the HTML date input
-    return dateStr;
+    return dateStr; // Assuming the date is already in the correct format
 }
 
 function formatTime(timeStr) {
-    // Convert a 24-hour time string like '21:00' to '21:00' for the HTML time input
-    return timeStr;
+    return timeStr; // Assuming the time is already in the correct format
 }
