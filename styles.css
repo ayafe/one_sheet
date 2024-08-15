@@ -128,3 +128,14 @@ label[for="taxExempt"] {
         font-size: 18px;
     }
 }
+
+/* Additional Styles */
+#startTime, #endTime {
+    width: 48%;
+    display: inline-block;
+    margin-right: 4%;
+}
+
+#endTime {
+    margin-right: 0;
+}
