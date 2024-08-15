@@ -39,7 +39,14 @@ function calculateTotalEventTime() {
         const hours = Math.floor(diff / 60);
         const minutes = diff % 60;
 
-        document.getElementById('totalEventTime').value = `${hours} hour(s) and ${minutes} minute(s)`;
+        let totalTime;
+        if (minutes === 0) {
+            totalTime = `${hours} hour(s)`;
+        } else {
+            totalTime = `${hours} hour(s) and ${minutes} minute(s)`;
+        }
+
+        document.getElementById('totalEventTime').value = totalTime;
     }
 }
 
