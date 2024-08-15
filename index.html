@@ -19,11 +19,18 @@
         <label for="eventDate">Date of Event:</label>
         <input type="date" id="eventDate" name="eventDate" required>
 
+	<div class="time-container">
+		<div class="time-field">
         <label for="startTime">Start Time:</label>
         <input type="time" id="startTime" name="startTime" step="900" required>
-
+		</div>
+    <div class="time-field">
         <label for="endTime">End Time:</label>
         <input type="time" id="endTime" name="endTime" step="900" required>
+    </div>
+</div>
+
+
 
         <label for="totalEventTime">Total Event Time (hours):</label>
         <input type="number" id="totalEventTime" name="totalEventTime" readonly>
