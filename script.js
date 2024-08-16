@@ -10,17 +10,7 @@ function toggleDJName() {
     }
 }
 
-function updateDepositField() {
-    const totalPayment = parseFloat(document.getElementById('totalPayment').value) || 0;
-    const depositField = document.getElementById('deposit');
-    const depositValue = parseFloat(depositField.value) || (totalPayment * 0.5).toFixed(2);
 
-    // Calculate percentage
-    const percentage = ((depositValue / totalPayment) * 100).toFixed(2);
-
-    // Update label with percentage
-    document.querySelector('label[for="deposit"]').textContent = `Deposit ($): (${percentage}%)`;
-}
 
 function calculateTotalEventTime() {
     const startTime = document.getElementById('startTime').value;
@@ -50,65 +40,14 @@ function calculateTotalEventTime() {
     }
 }
 
-
-function calculateTotal() {
-    calculateTotalEventTime(); // Ensure the total event time is calculated
-
-    const guests = parseFloat(document.getElementById('guests').value) || 0;
-    const pricePerPerson = parseFloat(document.getElementById('pricePerPerson').value) || 0;
-    const discountPercentage = parseFloat(document.getElementById('discount').value) || 0;
-    const isTaxExempt = document.getElementById('taxExempt').checked;
-
-    // Calculate total before discount
-    let totalBeforeDiscount = guests * pricePerPerson;
-
-    // Calculate discount amount
-    let discountAmount = totalBeforeDiscount * (discountPercentage / 100);
-    document.getElementById('discountAmount').value = discountAmount.toFixed(2);
-
-    // Calculate total after discount
-    let totalAfterDiscount = totalBeforeDiscount - discountAmount;
-    document.getElementById('totalBeforeTax').value = totalAfterDiscount.toFixed(2);
-
-    // Calculate tax if not exempt
-    const taxRate = 0.075;
-    const tax = isTaxExempt ? 0 : totalAfterDiscount * taxRate;
-    document.getElementById('tax').value = tax.toFixed(2);
-
-    // Calculate gratuity
-    const gratuityRate = 0.18;
-    const gratuity = totalAfterDiscount * gratuityRate;
-    document.getElementById('gratuity').value = gratuity.toFixed(2);
-
-    // Calculate total payment (total after discount + tax + gratuity)
-    const totalPayment = totalAfterDiscount + tax + gratuity;
-    document.getElementById('totalPayment').value = totalPayment.toFixed(2);
-
-    // Set deposit to 50% of the total payment (after discount, tax, and gratuity)
-    const depositField = document.getElementById('deposit');
-    depositField.value = (totalPayment * 0.5).toFixed(2);
-
-    // Calculate payment due
-    calculatePaymentDue();  // Update the payment due after calculating the total payment
-}
-
-function calculatePaymentDue() {
-    const totalPayment = parseFloat(document.getElementById('totalPayment').value) || 0;
-    const deposit = parseFloat(document.getElementById('deposit').value) || 0;
-
-    const paymentDue = totalPayment - deposit;
-    document.getElementById('paymentDue').value = paymentDue.toFixed(2);
-
-    updateDepositField(); // Ensure percentage is updated when the deposit changes
-}
-
 function generatePDF() {
-    //calculateTotal(); // Ensure all calculations are up-to-date
+    calculateTotal(); // Ensure all calculations are up-to-date
 
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
 
     const name = document.getElementById('name').value;
+    const room = document.getElementById('room').value;
     const eventDate = document.getElementById('eventDate').value;
     const startTime = document.getElementById('startTime').value;
     const endTime = document.getElementById('endTime').value;
@@ -116,7 +55,6 @@ function generatePDF() {
     const eventType = document.getElementById('eventType').value;
     const eventTypeComment = document.getElementById('eventTypeComment').value;
     const guests = document.getElementById('guests').value;
-    const room = document.getElementById('room').value;
     const clientInfo = document.getElementById('clientInfo').value;
     const dj = document.getElementById('dj').value;
     const djName = document.getElementById('djName').value;
@@ -134,43 +72,95 @@ function generatePDF() {
     const deposit = `$${document.getElementById('deposit').value}`;
     const paymentDue = `$${document.getElementById('paymentDue').value}`;
 
-    const lineHeight = 10;
+    // Customizable values
+    let lineHeight = 8; // Increase for more space between lines
+    let fontSize = 12; // Change to adjust text size
+
+    const pageHeight = doc.internal.pageSize.height;
     let yPosition = 20;
 
+    // Set font size globally
+    doc.setFontSize(fontSize);
+
+    function checkPageBreak(doc, yPosition, lineHeight) {
+        if (yPosition + lineHeight > pageHeight - 20) {
+            doc.addPage();
+            return 20; // Reset yPosition to the top of the new page
+        }
+        return yPosition;
+    }
+
     // Add data to the PDF
-    doc.setFontSize(12);
     doc.setFillColor(180, 198, 231); // Background color for "Name"
     doc.rect(10, yPosition - 8, 190, lineHeight + 2, 'F');
     yPosition = addBoldText(doc, 'Name:', name, 10, yPosition, lineHeight);
+	yPosition = addBoldText(doc, 'Room #:', room, 110, yPosition - lineHeight, lineHeight); // Align with the same line
 
+
+    yPosition = checkPageBreak(doc, yPosition, lineHeight);
     yPosition = addBoldText(doc, 'Date of Event:', eventDate, 10, yPosition, lineHeight);
+    
+    // Start Time and End Time on the same line
+    yPosition = checkPageBreak(doc, yPosition, lineHeight);
     yPosition = addBoldText(doc, 'Start Time:', startTime, 10, yPosition, lineHeight);
-    yPosition = addBoldText(doc, 'End Time:', endTime, 10, yPosition, lineHeight);
+yPosition = addBoldText(doc, 'End Time:', endTime, 110, yPosition - lineHeight, lineHeight); // No need to increment yPosition after this
+
+    yPosition += lineHeight; // Move to the next line after adding Start and End Time
+
     yPosition = addBoldText(doc, 'Total Event Time (hours):', totalEventTime, 10, yPosition, lineHeight);
     yPosition = addBoldText(doc, 'Event Type:', `${eventType} ${eventTypeComment ? `(${eventTypeComment})` : ''}`, 10, yPosition, lineHeight);
     yPosition = addBoldText(doc, 'Amount of Guests:', guests, 10, yPosition, lineHeight);
-    yPosition = addBoldText(doc, 'Room #:', room, 10, yPosition, lineHeight);
     yPosition = addBoldText(doc, "Client's Info:", clientInfo, 10, yPosition, lineHeight);
 
-    // Add DJ information
-    yPosition = addBoldText(doc, 'DJ Required:', dj, 10, yPosition, lineHeight);
-    if (dj === 'Yes' && djName) {
-        yPosition = addBoldText(doc, 'DJ Name:', djName, 10, yPosition, lineHeight);
+    // DJ Required and DJ Name on the same line
+    yPosition = checkPageBreak(doc, yPosition, lineHeight);
+yPosition = addBoldText(doc, 'DJ Required:', dj, 10, yPosition, lineHeight);
+if (dj === 'Yes' && djName) {
+    yPosition = addBoldText(doc, 'DJ Name:', djName, 110, yPosition - lineHeight, lineHeight); // Align with the same line, no extra space
+}
+
+    yPosition += lineHeight; // Move to the next line after adding DJ info
+
+    // Handle Menu and Desserts
+    yPosition = checkPageBreak(doc, yPosition, lineHeight);
+    yPosition = addRegularText(doc, 'Menu:', 10, yPosition);
+    yPosition = addBoldMultilineText(doc, menu, 10, yPosition, 190, lineHeight); // Pass lineHeight to the function
+
+    yPosition = checkPageBreak(doc, yPosition, lineHeight);
+    yPosition = addRegularText(doc, 'Desserts:', 10, yPosition);
+    yPosition = addBoldMultilineText(doc, desserts, 10, yPosition, 190, lineHeight); // Pass lineHeight to the function
+
+    yPosition = checkPageBreak(doc, yPosition, lineHeight);
+    yPosition = addBoldText(doc, 'Chosen Bar:', bar, 10, yPosition, lineHeight);
+
+    // Print Additional Items
+    const additionalItems = document.querySelectorAll('#additionalItemsContainer .item');
+    if (additionalItems.length > 0) {
+        yPosition = checkPageBreak(doc, yPosition, lineHeight);
+        yPosition = addBoldText(doc, 'Additional Items:', '', 10, yPosition, lineHeight);
+        additionalItems.forEach(item => {
+            yPosition = checkPageBreak(doc, yPosition, lineHeight);
+            const itemName = item.querySelector('input[type="text"]').value;
+            const itemPrice = `$${item.querySelector('input[type="number"]').value}`;
+            yPosition = addBoldText(doc, `  ${itemName}:`, itemPrice, 10, yPosition, lineHeight);
+        });
     }
 
-    // Handle multiline text for menu
-    yPosition = addMultilineText(doc, `Menu: ${menu}`, 10, yPosition, 190);
-    yPosition = addMultilineText(doc, `Desserts: ${desserts}`, 10, yPosition, 190);
-
-    yPosition = addBoldText(doc, 'Chosen Bar:', bar, 10, yPosition, lineHeight);
+    // Add Other Comments
+    yPosition = checkPageBreak(doc, yPosition, lineHeight);
     yPosition = addBoldText(doc, 'Other Comments:', comments, 10, yPosition, lineHeight);
 
-    doc.setFillColor(255, 255, 0); // Yellow background for payment section
-    doc.rect(10, yPosition - 8, 190, lineHeight + 2, 'F');
-    doc.setFont('helvetica', 'normal');
-    doc.text('Payment Details', 10, yPosition);
-    yPosition += lineHeight;
+    // Payment Details section
+yPosition = checkPageBreak(doc, yPosition, lineHeight);
+yPosition += 2; // Add this line to prevent overlap
+doc.setFillColor(255, 255, 0); // Yellow background for payment section
+doc.rect(10, yPosition - 8, 190, lineHeight + 2, 'F');
+doc.setFont('helvetica', 'normal');
+doc.text('Payment Details', 10, yPosition);
+yPosition += lineHeight;
 
+
+    yPosition = checkPageBreak(doc, yPosition, lineHeight);
     yPosition = addBoldText(doc, 'Price per Person ($):', pricePerPerson, 10, yPosition, lineHeight);
     yPosition = addBoldText(doc, 'Total Before Tax ($):', totalBeforeTax, 10, yPosition, lineHeight);
     yPosition = addBoldText(doc, 'Discount (%):', discount, 10, yPosition, lineHeight);
@@ -178,19 +168,43 @@ function generatePDF() {
     yPosition = addBoldText(doc, 'Tax (7.5%):', tax, 10, yPosition, lineHeight);
     yPosition = addBoldText(doc, 'Gratuity (18%):', gratuity, 10, yPosition, lineHeight);
 
+    // Totals and Payment Due
+    yPosition = checkPageBreak(doc, yPosition, lineHeight);
     doc.setFillColor(255, 255, 0); // Yellow background for totals
     doc.rect(10, yPosition - 8, 190, lineHeight + 2, 'F');
-
     yPosition = addBoldText(doc, `Deposit ($): (${((parseFloat(deposit.slice(1)) / parseFloat(totalPayment.slice(1))) * 100).toFixed(2)}%)`, deposit, 10, yPosition, lineHeight);
     yPosition = addBoldText(doc, 'Payment Due ($):', paymentDue, 10, yPosition, lineHeight);
 
     // Save the PDF
-    doc.save(`${name}_One_Sheet.pdf`);
+    doc.save(`${name}_${eventDate}.pdf`);
+}
+
+function addBoldText(doc, label, value, x, y, lineHeight = 10) {
+    doc.setFont('helvetica', 'normal');
+    doc.text(label, x, y);
+    doc.setFont('helvetica', 'bold');
+    doc.text(value, x + 50, y);
+    return y + lineHeight;
+}
+
+function addRegularText(doc, text, x, y) {
+    doc.setFont('helvetica', 'normal');
+    doc.text(text, x, y);
+    return y + 10; // Increment y position
+}
+
+function addBoldMultilineText(doc, text, x, y, maxWidth, lineHeight) {
+    doc.setFont('helvetica', 'bold');
+    const lines = doc.splitTextToSize(text, maxWidth);
+    doc.text(x, y, lines);
+    return y + lines.length * lineHeight; // Adjust y position based on number of lines
 }
 
 
+
+
 function generateKitchenSheetPDF() {
-  //  calculateTotal(); // Ensure all calculations are up-to-date
+   calculateTotal(); // Ensure all calculations are up-to-date
 
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
@@ -244,19 +258,7 @@ function generateKitchenSheetPDF() {
     // Save the kitchen sheet PDF
     doc.save(`${name}_Kitchen_One_Sheet.pdf`);
 }
-function addBoldText(doc, label, value, x, y, lineHeight) {
-    doc.setFont('helvetica', 'normal');
-    doc.text(label, x, y);
-    doc.setFont('helvetica', 'bold');
-    doc.text(value, x + 50, y); // Increase indentation to avoid overlap with label
-    return y + lineHeight;
-}
 
-function addMultilineText(doc, text, x, y, maxWidth) {
-    const lines = doc.splitTextToSize(text, maxWidth);
-    doc.text(x, y, lines);
-    return y + lines.length * 10; // Adjust y position based on number of lines
-}
 
 async function parsePDF() {
     try {
@@ -363,4 +365,121 @@ function formatDate(dateStr) {
 
 function formatTime(timeStr) {
     return timeStr; // Assuming the time is already in the correct format
+}
+
+function addItem(event) {
+    if (event) event.preventDefault(); // Prevent the default link behavior
+
+    const container = document.getElementById('additionalItemsContainer');
+
+    const itemDiv = document.createElement('div');
+    itemDiv.className = 'item';
+
+    const itemName = document.createElement('input');
+    itemName.type = 'text';
+    itemName.placeholder = 'Item Name';
+    itemName.required = true;
+
+    const itemPrice = document.createElement('input');
+    itemPrice.type = 'number';
+    itemPrice.placeholder = 'Item Price ($)';
+    itemPrice.min = '0';
+    itemPrice.step = '0.01';
+    itemPrice.required = true;
+    itemPrice.oninput = calculateTotal;
+
+    const removeLink = document.createElement('a');
+    removeLink.href = '#';
+    removeLink.className = 'remove-item';
+    removeLink.textContent = '- Remove';
+    removeLink.onclick = function(event) {
+        event.preventDefault();
+        container.removeChild(itemDiv);
+        calculateTotal();
+    };
+
+    itemDiv.appendChild(itemName);
+    itemDiv.appendChild(itemPrice);
+    itemDiv.appendChild(removeLink);
+    container.appendChild(itemDiv);
+}
+
+
+
+
+function calculateTotal() {
+    const guests = parseFloat(document.getElementById('guests').value) || 0;
+    const pricePerPerson = parseFloat(document.getElementById('pricePerPerson').value) || 0;
+    let totalBeforeDiscount = guests * pricePerPerson;
+
+    // Calculate total for additional items
+    const additionalItems = document.querySelectorAll('#additionalItemsContainer .item input[type="number"]');
+    additionalItems.forEach(item => {
+        totalBeforeDiscount += parseFloat(item.value) || 0;
+    });
+
+    const discountPercentage = parseFloat(document.getElementById('discount').value) || 0;
+    const discountAmount = totalBeforeDiscount * (discountPercentage / 100);
+    document.getElementById('discountAmount').value = discountAmount.toFixed(2);
+
+    const totalAfterDiscount = totalBeforeDiscount - discountAmount;
+    document.getElementById('totalBeforeTax').value = totalAfterDiscount.toFixed(2);
+
+    // Handle tax exemption
+    const isTaxExempt = document.getElementById('taxExempt').checked;
+    const taxRate = 0.075;
+    const tax = isTaxExempt ? 0 : totalAfterDiscount * taxRate;
+    document.getElementById('tax').value = tax.toFixed(2);
+
+    // Calculate gratuity
+    const gratuityRate = 0.18;
+    const gratuity = totalAfterDiscount * gratuityRate;
+    document.getElementById('gratuity').value = gratuity.toFixed(2);
+
+    // Calculate total payment
+    const totalPayment = totalAfterDiscount + tax + gratuity;
+    document.getElementById('totalPayment').value = totalPayment.toFixed(2);
+
+    // Update deposit field and label
+    updateDepositField();
+
+    // Calculate payment due
+    calculatePaymentDue();
+	
+}
+
+function updateDepositField() {
+    const totalPayment = parseFloat(document.getElementById('totalPayment').value) || 0;
+    const depositField = document.getElementById('deposit');
+    const userEnteredDeposit = parseFloat(depositField.value);
+
+    // If the user hasn't entered a deposit, default to 50% of the total payment
+    const depositValue = !isNaN(userEnteredDeposit) && userEnteredDeposit > 0 
+        ? userEnteredDeposit 
+        : totalPayment * 0.5;
+
+    // Calculate percentage
+    const percentage = ((depositValue / totalPayment) * 100).toFixed(2);
+
+    // Update label with percentage
+    document.querySelector('label[for="deposit"]').textContent = `Deposit ($): (${percentage}%)`;
+
+    // Update the deposit field value
+    depositField.value = depositValue.toFixed(2);
+}
+
+
+function calculatePaymentDue() {
+    const totalPayment = parseFloat(document.getElementById('totalPayment').value) || 0;
+    const deposit = parseFloat(document.getElementById('deposit').value) || 0;
+
+    const paymentDue = totalPayment - deposit;
+    document.getElementById('paymentDue').value = paymentDue.toFixed(2);
+}
+
+function addMultilineText(doc, text, x, y, maxWidth) {
+    doc.setFont('helvetica', 'normal');
+    const lines = doc.splitTextToSize(text, maxWidth);
+    doc.text(x, y, lines);
+    return y + lines.length * 10; // Adjust y position based on number of lines
 }
