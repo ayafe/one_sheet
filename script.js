@@ -404,6 +404,8 @@ function addItem(event) {
     container.appendChild(itemDiv);
 }
 
+document.getElementById('addItemLink').addEventListener('click', addItem);
+
 
 
 
