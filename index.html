@@ -82,6 +82,12 @@
 
         <label for="pricePerPerson">Price per Person ($):</label>
         <input type="number" id="pricePerPerson" name="pricePerPerson" required>
+<label for="additionalItems">Additional Items:</label>
+<div id="additionalItemsContainer">
+    <!-- Additional items will be added here -->
+</div>
+<a href="#" onclick="addItem(event)" class="add-item">+ Add Item</a>
+
 
         <label for="totalBeforeTax">Total Before Tax ($):</label>
         <input type="number" id="totalBeforeTax" name="totalBeforeTax" readonly>
@@ -114,7 +120,7 @@
         <button type="button" onclick="generatePDF()">Generate PDF</button>
         <button type="button" onclick="generateKitchenSheetPDF()">Generate Kitchen Sheet PDF</button>
 
-        <label for="pdfUpload">Upload PDF to Edit:</label>
+        <label for="pdfUpload">Upload CSV to Edit:</label>
         <input type="file" id="pdfUpload" accept="application/pdf" onchange="parsePDF()">
     </form>
 </body>
