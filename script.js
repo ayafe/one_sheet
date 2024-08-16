@@ -262,7 +262,6 @@ function generateKitchenSheetPDF() {
 
 async function parsePDF() {
     try {
-        console.log("Starting PDF upload...");
         const file = document.getElementById('pdfUpload').files[0];
         if (!file) {
             console.error("No file selected.");
@@ -270,38 +269,32 @@ async function parsePDF() {
         }
 
         const pdf = await pdfjsLib.getDocument(URL.createObjectURL(file)).promise;
-        console.log("PDF loaded successfully.");
-
         const page = await pdf.getPage(1);
-        console.log("Page 1 loaded.");
-
         const textContent = await page.getTextContent();
-        console.log("Text content extracted.");
-
         const textItems = textContent.items.map(item => item.str);
         const text = textItems.join(' ');
 
-        console.log("Combined text content:", text);
-
-        // Extract fields and log results
-        document.getElementById('name').value = extractText(text, 'Name:', 'Date of Event:');
-        document.getElementById('eventDate').value = formatDate(extractText(text, 'Date of Event:', 'Start Time:'));
-        document.getElementById('startTime').value = formatTime(extractText(text, 'Start Time:', 'End Time:'));
-        document.getElementById('endTime').value = formatTime(extractText(text, 'End Time:', 'Total Event Time (hours):'));
+        // Extract and map fields with better isolation of data
+        document.getElementById('name').value = extractText(text, 'Name:', 'Date of Event:').trim();
+        document.getElementById('eventDate').value = extractText(text, 'Date of Event:', 'Start Time:').trim();
+        document.getElementById('startTime').value = extractText(text, 'Start Time:', 'End Time:').trim();
+        document.getElementById('endTime').value = extractText(text, 'End Time:', 'Total Event Time (hours):').trim();
         document.getElementById('totalEventTime').value = extractText(text, 'Total Event Time (hours):', 'Event Type:').trim();
 
-        // Extract event type and comment
+        // Extract event type and comment correctly
         const eventTypeWithComment = extractText(text, 'Event Type:', 'Amount of Guests:').trim();
         const eventType = findMatchingEventType(eventTypeWithComment);
         const eventTypeComment = extractEventComment(eventTypeWithComment, eventType);
         document.getElementById('eventType').value = eventType;
         document.getElementById('eventTypeComment').value = eventTypeComment;
 
+        // Correctly extract the number of guests and the room number
         document.getElementById('guests').value = extractText(text, 'Amount of Guests:', 'Room #:').trim();
         document.getElementById('room').value = extractText(text, 'Room #:', "Client's Info:").trim();
+
         document.getElementById('clientInfo').value = extractText(text, "Client's Info:", 'DJ Required:').trim();
 
-        // Extract and handle DJ information
+        // Extract and handle DJ information correctly
         const djInfo = extractText(text, 'DJ Required:', 'Menu:').trim();
         if (djInfo.startsWith('Yes')) {
             document.getElementById('dj').value = 'Yes';
@@ -317,11 +310,9 @@ async function parsePDF() {
         document.getElementById('desserts').value = extractText(text, 'Desserts:', 'Chosen Bar:').trim();
         document.getElementById('bar').value = extractText(text, 'Chosen Bar:', 'Other Comments:').trim();
         document.getElementById('comments').value = extractText(text, 'Other Comments:', 'Payment Details').trim();
+
         document.getElementById('pricePerPerson').value = extractText(text, 'Price per Person ($):', 'Total Before Tax ($):').replace('$', '').trim();
-
-        const totalBeforeTax = extractText(text, 'Total Before Tax ($):', 'Discount (%):').replace('$', '').trim();
-        document.getElementById('totalBeforeTax').value = totalBeforeTax;
-
+        document.getElementById('totalBeforeTax').value = extractText(text, 'Total Before Tax ($):', 'Discount (%):').replace('$', '').trim();
         document.getElementById('discount').value = extractText(text, 'Discount (%):', 'Total Discount Amount ($):').replace('%', '').trim();
         document.getElementById('discountAmount').value = extractText(text, 'Total Discount Amount ($):', 'Tax (7.5%):').replace('$', '').trim();
         document.getElementById('tax').value = extractText(text, 'Tax (7.5%):', 'Gratuity (18%):').replace('$', '').trim();
@@ -330,10 +321,56 @@ async function parsePDF() {
         document.getElementById('deposit').value = extractText(text, 'Deposit ($):', 'Payment Due ($):').replace('$', '').trim();
         document.getElementById('paymentDue').value = extractText(text, 'Payment Due ($):', '').replace('$', '').trim();
 
+        // Handle additional items
+        const additionalItemsText = extractText(text, 'Additional Items:', 'Other Comments:');
+        if (additionalItemsText) {
+            const additionalItemsArray = additionalItemsText.split('  ').filter(item => item.trim());
+            additionalItemsArray.forEach(itemText => {
+                const [itemName, itemPrice] = itemText.split(':').map(s => s.trim());
+                addItemToForm(itemName, itemPrice);
+            });
+        }
+
         console.log("PDF parsing completed successfully.");
     } catch (error) {
         console.error("Error during PDF parsing:", error);
     }
+}
+
+// Add the extracted additional items to the form
+function addItemToForm(itemName, itemPrice) {
+    const container = document.getElementById('additionalItemsContainer');
+    
+    const itemDiv = document.createElement('div');
+    itemDiv.className = 'item';
+
+    const itemNameInput = document.createElement('input');
+    itemNameInput.type = 'text';
+    itemNameInput.value = itemName;
+    itemNameInput.required = true;
+
+    const itemPriceInput = document.createElement('input');
+    itemPriceInput.type = 'number';
+    itemPriceInput.value = parseFloat(itemPrice.replace('$', ''));
+    itemPriceInput.min = '0';
+    itemPriceInput.step = '0.01';
+    itemPriceInput.required = true;
+    itemPriceInput.oninput = calculateTotal;
+
+    const removeLink = document.createElement('a');
+    removeLink.href = '#';
+    removeLink.className = 'remove-item';
+    removeLink.textContent = '- Remove';
+    removeLink.onclick = function (event) {
+        event.preventDefault();
+        container.removeChild(itemDiv);
+        calculateTotal();
+    };
+
+    itemDiv.appendChild(itemNameInput);
+    itemDiv.appendChild(itemPriceInput);
+    itemDiv.appendChild(removeLink);
+    container.appendChild(itemDiv);
 }
 
 function extractText(text, start, end) {
@@ -342,22 +379,19 @@ function extractText(text, start, end) {
     return text.substring(startIndex, endIndex).trim();
 }
 
-// Helper function to match event type from the form's dropdown
 function findMatchingEventType(extractedEventType) {
     const eventTypeSelect = document.getElementById('eventType');
     const options = Array.from(eventTypeSelect.options);
-    
-    // Match the extracted event type with the options in the select element
     const match = options.find(option => extractedEventType.includes(option.value));
-    return match ? match.value : ''; // Return matched value or an empty string if no match found
+    return match ? match.value : '';
 }
 
-// Helper function to extract the event comment
 function extractEventComment(eventTypeWithComment, eventType) {
     const commentStartIndex = eventTypeWithComment.indexOf(eventType) + eventType.length;
     const comment = eventTypeWithComment.substring(commentStartIndex).trim();
     return comment.startsWith('(') && comment.endsWith(')') ? comment.slice(1, -1) : comment;
 }
+
 
 function formatDate(dateStr) {
     return dateStr; // Assuming the date is already in the correct format
