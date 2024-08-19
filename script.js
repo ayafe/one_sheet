@@ -109,7 +109,7 @@ yPosition = addBoldText(doc, 'End Time:', endTime, 110, yPosition - lineHeight, 
 
     yPosition = addBoldText(doc, 'Total Event Time (hours):', totalEventTime, 10, yPosition, lineHeight);
     yPosition = addBoldText(doc, 'Event Type:', `${eventType} ${eventTypeComment ? `(${eventTypeComment})` : ''}`, 10, yPosition, lineHeight);
-    yPosition = addBoldText(doc, 'Amount of Guests:', guests, 10, yPosition, lineHeight);
+    yPosition = addBoldText(doc, 'Number of Guests:', guests, 10, yPosition, lineHeight);
     yPosition = addBoldText(doc, "Client's Info:", clientInfo, 10, yPosition, lineHeight);
 
     // DJ Required and DJ Name on the same line
@@ -239,7 +239,7 @@ function generateKitchenSheetPDF() {
     yPosition = addBoldText(doc, 'End Time:', endTime, 10, yPosition, lineHeight);
     yPosition = addBoldText(doc, 'Total Event Time (hours):', totalEventTime, 10, yPosition, lineHeight);
     yPosition = addBoldText(doc, 'Event Type:', `${eventType} ${eventTypeComment ? `(${eventTypeComment})` : ''}`, 10, yPosition, lineHeight);
-    yPosition = addBoldText(doc, 'Amount of Guests:', guests, 10, yPosition, lineHeight);
+    yPosition = addBoldText(doc, 'Number of Guests:', guests, 10, yPosition, lineHeight);
     yPosition = addBoldText(doc, 'Room #:', room, 10, yPosition, lineHeight);
 
     // Add DJ information
@@ -282,14 +282,14 @@ async function parsePDF() {
         document.getElementById('totalEventTime').value = extractText(text, 'Total Event Time (hours):', 'Event Type:').trim();
 
         // Extract event type and comment correctly
-        const eventTypeWithComment = extractText(text, 'Event Type:', 'Amount of Guests:').trim();
+        const eventTypeWithComment = extractText(text, 'Event Type:', 'Number of Guests:').trim();
         const eventType = findMatchingEventType(eventTypeWithComment);
         const eventTypeComment = extractEventComment(eventTypeWithComment, eventType);
         document.getElementById('eventType').value = eventType;
         document.getElementById('eventTypeComment').value = eventTypeComment;
 
         // Correctly extract the number of guests and the room number
-        document.getElementById('guests').value = extractText(text, 'Amount of Guests:', 'Room #:').trim();
+        document.getElementById('guests').value = extractText(text, 'Number of Guests:', 'Room #:').trim();
         document.getElementById('room').value = extractText(text, 'Room #:', "Client's Info:").trim();
 
         document.getElementById('clientInfo').value = extractText(text, "Client's Info:", 'DJ Required:').trim();
