@@ -454,10 +454,14 @@ function calculateTotal() {
         totalBeforeDiscount += parseFloat(item.value) || 0;
     });
 
-    const discountPercentage = parseFloat(document.getElementById('discount').value) || 0;
-    const discountAmount = totalBeforeDiscount * (discountPercentage / 100);
-    document.getElementById('discountAmount').value = discountAmount.toFixed(2);
+    // Get the discount amount (fixed amount)
+    const discountAmount = parseFloat(document.getElementById('discount').value) || 0;
 
+    // Calculate the discount percentage based on the total before discount
+    const discountPercentage = totalBeforeDiscount > 0 ? (discountAmount / totalBeforeDiscount) * 100 : 0;
+    document.getElementById('discountAmount').value = discountPercentage.toFixed(2) + '%';
+
+    // Calculate the total after applying the discount
     const totalAfterDiscount = totalBeforeDiscount - discountAmount;
     document.getElementById('totalBeforeTax').value = totalAfterDiscount.toFixed(2);
 
@@ -481,8 +485,8 @@ function calculateTotal() {
 
     // Calculate payment due
     calculatePaymentDue();
-	
 }
+
 
 function updateDepositField() {
     const totalPayment = parseFloat(document.getElementById('totalPayment').value) || 0;
