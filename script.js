@@ -153,7 +153,7 @@ if (dj === 'Yes' && djName) {
     // Payment Details section
 yPosition = checkPageBreak(doc, yPosition, lineHeight);
 yPosition += 2; // Add this line to prevent overlap
-doc.setFillColor(255, 255, 0); // Yellow background for payment section
+//doc.setFillColor(255, 255, 0); // Yellow background for payment section
 doc.rect(10, yPosition - 8, 190, lineHeight + 2, 'F');
 doc.setFont('helvetica', 'normal');
 doc.text('Payment Details', 10, yPosition);
@@ -171,7 +171,7 @@ yPosition += lineHeight;
     // Totals and Payment Due
 	yPosition
     yPosition = checkPageBreak(doc, yPosition, lineHeight);
-    doc.setFillColor(255, 255, 0); // Yellow background for totals
+    //doc.setFillColor(255, 255, 0); // Yellow background for totals
     doc.rect(10, yPosition - 8, 190, lineHeight + 2, 'F');
 	yPosition = addBoldText(doc, 'Total Payment ($):', totalPayment, 10, yPosition, lineHeight);
     yPosition = addBoldText(doc, `Deposit ($): (${((parseFloat(deposit.slice(1)) / parseFloat(totalPayment.slice(1))) * 100).toFixed(2)}%)`, deposit, 10, yPosition, lineHeight);
