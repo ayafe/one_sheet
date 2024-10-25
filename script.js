@@ -138,7 +138,7 @@ if (dj === 'Yes' && djName) {
     // Add Other Comments
     yPosition = checkPageBreak(doc, yPosition, lineHeight);
     yPosition = addBoldText(doc, 'Other Comments:', comments, 10, yPosition, lineHeight);	
-	
+ yPosition += lineHeight; // Move to the next line after adding other coments 
 	
     // Print Additional Items
     const additionalItems = document.querySelectorAll('#additionalItemsContainer .item');
