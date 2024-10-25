@@ -105,12 +105,13 @@ function generatePDF() {
     yPosition = addBoldText(doc, 'Start Time:', startTime, 10, yPosition, lineHeight);
 yPosition = addBoldText(doc, 'End Time:', endTime, 110, yPosition - lineHeight, lineHeight); // No need to increment yPosition after this
 
-    yPosition += lineHeight; // Move to the next line after adding Start and End Time
+  //  yPosition += lineHeight; // Move to the next line after adding Start and End Time
 
     yPosition = addBoldText(doc, 'Total Event Time (hours):', totalEventTime, 10, yPosition, lineHeight);
     yPosition = addBoldText(doc, 'Event Type:', `${eventType} ${eventTypeComment ? `(${eventTypeComment})` : ''}`, 10, yPosition, lineHeight);
     yPosition = addBoldText(doc, 'Number of Guests:', guests, 10, yPosition, lineHeight);
     yPosition = addBoldText(doc, "Client's Info:", clientInfo, 10, yPosition, lineHeight);
+    yPosition += lineHeight; // Move to the next line after adding client info
 
     // DJ Required and DJ Name on the same line
     yPosition = checkPageBreak(doc, yPosition, lineHeight);
