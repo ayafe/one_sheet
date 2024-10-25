@@ -134,6 +134,12 @@ if (dj === 'Yes' && djName) {
     yPosition = checkPageBreak(doc, yPosition, lineHeight);
     yPosition = addBoldText(doc, 'Chosen Bar:', bar, 10, yPosition, lineHeight);
 
+
+    // Add Other Comments
+    yPosition = checkPageBreak(doc, yPosition, lineHeight);
+    yPosition = addBoldText(doc, 'Other Comments:', comments, 10, yPosition, lineHeight);	
+	
+	
     // Print Additional Items
     const additionalItems = document.querySelectorAll('#additionalItemsContainer .item');
     if (additionalItems.length > 0) {
@@ -147,9 +153,7 @@ if (dj === 'Yes' && djName) {
         });
     }
 
-    // Add Other Comments
-    yPosition = checkPageBreak(doc, yPosition, lineHeight);
-    yPosition = addBoldText(doc, 'Other Comments:', comments, 10, yPosition, lineHeight);
+
 
     // Payment Details section
 yPosition = checkPageBreak(doc, yPosition, lineHeight);
