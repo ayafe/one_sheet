@@ -228,7 +228,7 @@ function generateKitchenSheetPDF() {
     const menu = document.getElementById('menu').value;
     const desserts = document.getElementById('desserts').value;
     const bar = document.getElementById('bar').value;
-    const comments = document.getElementById('comments').value;
+    //const comments = document.getElementById('comments').value;
     const dj = document.getElementById('dj').value;
     const djName = document.getElementById('djName').value;
 
@@ -260,7 +260,7 @@ function generateKitchenSheetPDF() {
     yPosition = addMultilineText(doc, `Desserts: ${desserts}`, 10, yPosition, 190);
 
     yPosition = addBoldText(doc, 'Chosen Bar:', bar, 10, yPosition, lineHeight);
-    yPosition = addBoldText(doc, 'Other Comments:', comments, 10, yPosition, lineHeight);
+    //yPosition = addBoldText(doc, 'Other Comments:', comments, 10, yPosition, lineHeight);
 
     // Save the kitchen sheet PDF
     doc.save(`${name}_Kitchen_One_Sheet.pdf`);
