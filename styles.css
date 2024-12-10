@@ -194,3 +194,13 @@ label[for="taxExempt"] {
     margin-left: 10px;
     cursor: pointer;
 }
+input[type="checkbox"] {
+    margin-right: 10px;
+}
+
+label[for="includeGratuity"] {
+    display: inline-block;
+    font-weight: 400;
+    margin-bottom: 0;
+    color: #333;
+}

@@ -106,8 +106,10 @@
         <label for="tax">Tax (7.5%):</label>
         <input type="number" id="tax" name="tax" readonly>
 
-        <label for="gratuity">Gratuity (18%):</label>
-        <input type="number" id="gratuity" name="gratuity" readonly>
+<input type="checkbox" id="includeGratuity" name="includeGratuity" checked onchange="calculateTotal()">
+<label for="includeGratuity">Include Gratuity (18%)</label>
+<input type="number" id="gratuity" name="gratuity" readonly>
+
 
         <label for="totalPayment">Total Payment ($):</label>
         <input type="number" id="totalPayment" name="totalPayment" readonly>

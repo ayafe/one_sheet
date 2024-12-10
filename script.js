@@ -479,9 +479,16 @@ function calculateTotal() {
     document.getElementById('tax').value = tax.toFixed(2);
 
     // Calculate gratuity
-    const gratuityRate = 0.18;
-    const gratuity = totalAfterDiscount * gratuityRate;
-    document.getElementById('gratuity').value = gratuity.toFixed(2);
+	const gratuityRate = 0.18;
+	let gratuity = 0;
+
+	const includeGratuity = document.getElementById('includeGratuity').checked;
+	if (includeGratuity) {
+		gratuity = totalAfterDiscount * gratuityRate;
+			}
+
+document.getElementById('gratuity').value = gratuity.toFixed(2);
+
 
     // Calculate total payment
     const totalPayment = totalAfterDiscount + tax + gratuity;
